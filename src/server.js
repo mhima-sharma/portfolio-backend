@@ -9,42 +9,9 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:4200')
-  .split(',')
-  .map(origin => origin.trim())
-  .filter(Boolean);
-const vercelPreviewPattern = /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/;
-
-const isAllowedOrigin = origin => {
-  if (!origin) {
-    return true;
-  }
-
-  if (allowedOrigins.includes(origin)) {
-    return true;
-  }
-
-  if (origin === 'http://localhost:4200' || origin === 'http://127.0.0.1:4200') {
-    return true;
-  }
-
-  if (vercelPreviewPattern.test(origin)) {
-    return true;
-  }
-
-  return false;
-};
-
 const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow server-to-server requests and tools like curl/Postman without an Origin header.
-    if (isAllowedOrigin(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
-  },
-  credentials: true,
+  origin: true,
+  credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 204,
@@ -97,7 +64,7 @@ app.use(errorHandler);
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`CORS enabled for: ${allowedOrigins.join(', ')}`);
+  console.log('CORS enabled for all origins');
 });
 
 export default app;
