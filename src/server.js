@@ -26,6 +26,20 @@ app.use(
 );
 
 // Health Check
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Portfolio backend is running',
+    data: {
+      health: '/health',
+      auth: '/api/auth/login',
+      portfolio: '/api/portfolio',
+      about: '/api/about',
+      contact: '/api/contact',
+    },
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
