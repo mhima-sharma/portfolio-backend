@@ -13,14 +13,32 @@ const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:4200')
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean);
+const vercelPreviewPattern = /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/;
+
+const isAllowedOrigin = origin => {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  if (origin === 'http://localhost:4200' || origin === 'http://127.0.0.1:4200') {
+    return true;
+  }
+
+  if (vercelPreviewPattern.test(origin)) {
+    return true;
+  }
+
+  return false;
+};
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow server-to-server requests and tools like curl/Postman without an Origin header.
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
@@ -33,6 +51,13 @@ const corsOptions = {
 };
 
 // Middleware
+app.use((req, res, next) => {
+  if (req.headers.origin) {
+    console.log(`Incoming origin: ${req.headers.origin}`);
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
