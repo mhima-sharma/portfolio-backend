@@ -31,21 +31,21 @@ import {
 const router = express.Router();
 
 // Portfolio (Public routes)
-router.get('/portfolio', portfolioController.getPortfolio);
-router.get('/about', portfolioController.getAboutData);
-router.get('/contact', portfolioController.getContactData);
+router.get('/portfolio/:slug?', portfolioController.getPortfolio);
+router.get('/about/:slug?', portfolioController.getAboutData);
+router.get('/contact/:slug?', portfolioController.getContactData);
 
 // Skills (Public)
-router.get('/skills', skillController.getAll);
-router.get('/skills/:id', validateSkillId, skillValidationErrors, skillController.getById);
+router.get('/skills/:slug?', skillController.getAll);
+router.get('/skills/:slug/:id', validateSkillId, skillValidationErrors, skillController.getById);
 
 // Projects (Public)
-router.get('/projects', projectController.getAll);
-router.get('/projects/:id', validateProjectId, projectValidationErrors, projectController.getById);
+router.get('/projects/:slug?', projectController.getAll);
+router.get('/projects/:slug/:id', validateProjectId, projectValidationErrors, projectController.getById);
 
 // Experience (Public)
-router.get('/experience', experienceController.getAll);
-router.get('/experience/:id', validateExperienceId, experienceValidationErrors, experienceController.getById);
+router.get('/experience/:slug?', experienceController.getAll);
+router.get('/experience/:slug/:id', validateExperienceId, experienceValidationErrors, experienceController.getById);
 
 // Protected Routes (Admin)
 

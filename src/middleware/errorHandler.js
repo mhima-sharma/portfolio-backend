@@ -3,6 +3,16 @@ import { errorResponse } from '../utils/response.js';
 export const errorHandler = (err, req, res, next) => {
   console.error('Error:', err);
 
+  // Prisma database connection error
+  if (err.code === 'P1001') {
+    return errorResponse(
+      res,
+      'Database connection failed. Please try again in a moment.',
+      [],
+      503
+    );
+  }
+
   // Prisma unique constraint error
   if (err.code === 'P2002') {
     return errorResponse(

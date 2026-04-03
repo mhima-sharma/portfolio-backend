@@ -1,30 +1,32 @@
 import prisma from '../config/database.js';
 
-export const createExperience = async (data) => {
+export const createExperience = async (profileId, data) => {
   return prisma.experience.create({
     data: {
       ...data,
+      profileId,
       startDate: new Date(data.startDate),
       endDate: new Date(data.endDate),
     },
   });
 };
 
-export const getAllExperience = async () => {
+export const getAllExperience = async (profileId) => {
   return prisma.experience.findMany({
+    where: { profileId },
     orderBy: {
       startDate: 'desc',
     },
   });
 };
 
-export const getExperienceById = async (id) => {
-  return prisma.experience.findUnique({
-    where: { id },
+export const getExperienceById = async (id, profileId) => {
+  return prisma.experience.findFirst({
+    where: { id, profileId },
   });
 };
 
-export const updateExperience = async (id, data) => {
+export const updateExperience = async (id, profileId, data) => {
   const updateData = { ...data };
 
   if (data.startDate) {
@@ -35,14 +37,14 @@ export const updateExperience = async (id, data) => {
     updateData.endDate = new Date(data.endDate);
   }
 
-  return prisma.experience.update({
-    where: { id },
+  return prisma.experience.updateMany({
+    where: { id, profileId },
     data: updateData,
   });
 };
 
-export const deleteExperience = async (id) => {
-  return prisma.experience.delete({
-    where: { id },
+export const deleteExperience = async (id, profileId) => {
+  return prisma.experience.deleteMany({
+    where: { id, profileId },
   });
 };

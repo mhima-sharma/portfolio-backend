@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-export const generateToken = (adminId) => {
+export const generateToken = (adminId, profileId) => {
   return jwt.sign(
-    { id: adminId },
+    { id: adminId, profileId },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );

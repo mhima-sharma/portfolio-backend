@@ -34,17 +34,18 @@ const normalizeOptionalText = value => {
   return value;
 };
 
-export const getPortfolioData = async () => {
+export const getPortfolioData = async (profileId) => {
   const [about, contact, skills, projects, experience] = await Promise.all([
-    prisma.about.findFirst(),
-    prisma.contact.findFirst(),
-    prisma.skill.findMany(),
+    prisma.about.findUnique({ where: { profileId } }),
+    prisma.contact.findUnique({ where: { profileId } }),
+    prisma.skill.findMany({ where: { profileId } }),
     prisma.project.findMany({
+      where: { profileId },
       include: {
         technologies: true,
       },
     }),
-    prisma.experience.findMany(),
+    prisma.experience.findMany({ where: { profileId } }),
   ]);
 
   // Transform projects to include technologies array
@@ -66,8 +67,8 @@ export const getPortfolioData = async () => {
   };
 };
 
-export const getAbout = async () => {
-  const about = await prisma.about.findFirst();
+export const getAbout = async (profileId) => {
+  const about = await prisma.about.findUnique({ where: { profileId } });
   return about || {
     bio: '',
     description: '',
@@ -75,8 +76,8 @@ export const getAbout = async () => {
   };
 };
 
-export const updateAbout = async (data) => {
-  const about = await prisma.about.findFirst();
+export const updateAbout = async (profileId, data) => {
+  const about = await prisma.about.findUnique({ where: { profileId } });
 
   if (!about) {
     // Create if doesn't exist
@@ -85,12 +86,13 @@ export const updateAbout = async (data) => {
         bio: data.bio || '',
         description: data.description || '',
         yearsExperience: data.yearsExperience || 0,
+        profileId,
       },
     });
   }
 
   return prisma.about.update({
-    where: { id: about.id },
+    where: { profileId },
     data: {
       ...(data.bio !== undefined && { bio: data.bio }),
       ...(data.description !== undefined && { description: data.description }),
@@ -99,13 +101,13 @@ export const updateAbout = async (data) => {
   });
 };
 
-export const getContact = async () => {
-  const contact = await prisma.contact.findFirst();
+export const getContact = async (profileId) => {
+  const contact = await prisma.contact.findUnique({ where: { profileId } });
   return contact ? { ...emptyContact, ...contact } : emptyContact;
 };
 
-export const updateContact = async (data) => {
-  const contact = await prisma.contact.findFirst();
+export const updateContact = async (profileId, data) => {
+  const contact = await prisma.contact.findUnique({ where: { profileId } });
   const contactData = {
     ...(normalizeOptionalText(data.email) !== undefined && { email: normalizeOptionalText(data.email) }),
     ...(normalizeOptionalText(data.phone) !== undefined && { phone: normalizeOptionalText(data.phone) }),
@@ -126,12 +128,13 @@ export const updateContact = async (data) => {
       data: {
         ...emptyContact,
         ...contactData,
+        profileId,
       },
     });
   }
 
   return prisma.contact.update({
-    where: { id: contact.id },
+    where: { profileId },
     data: contactData,
   });
 };

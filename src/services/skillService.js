@@ -1,30 +1,35 @@
 import prisma from '../config/database.js';
 
-export const createSkill = async (data) => {
+export const createSkill = async (profileId, data) => {
   return prisma.skill.create({
+    data: {
+      ...data,
+      profileId,
+    },
+  });
+};
+
+export const getAllSkills = async (profileId) => {
+  return prisma.skill.findMany({
+    where: { profileId },
+  });
+};
+
+export const getSkillById = async (id, profileId) => {
+  return prisma.skill.findFirst({
+    where: { id, profileId },
+  });
+};
+
+export const updateSkill = async (id, profileId, data) => {
+  return prisma.skill.updateMany({
+    where: { id, profileId },
     data,
   });
 };
 
-export const getAllSkills = async () => {
-  return prisma.skill.findMany();
-};
-
-export const getSkillById = async (id) => {
-  return prisma.skill.findUnique({
-    where: { id },
-  });
-};
-
-export const updateSkill = async (id, data) => {
-  return prisma.skill.update({
-    where: { id },
-    data,
-  });
-};
-
-export const deleteSkill = async (id) => {
-  return prisma.skill.delete({
-    where: { id },
+export const deleteSkill = async (id, profileId) => {
+  return prisma.skill.deleteMany({
+    where: { id, profileId },
   });
 };

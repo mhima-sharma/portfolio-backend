@@ -15,10 +15,33 @@ model Admin {
   name      String
   email     String  @unique
   passwordHash String
+  profileId Int     @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
   @@map("admins")
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  title     String
+  email     String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  admin     Admin?
+  about     About?
+  contact   Contact?
+  skills    Skill[]
+  projects  Project[]
+  experience Experience[]
+
+  @@map("profiles")
 }
 
 model About {
@@ -26,8 +49,11 @@ model About {
   bio             String  @db.Text
   description     String  @db.Text
   yearsExperience Int
+  profileId       Int     @unique
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("about")
 }
@@ -45,8 +71,11 @@ model Contact {
   instagram String?
   youtube   String?
   portfolio String?
+  profileId Int     @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("contact")
 }
@@ -56,8 +85,11 @@ model Skill {
   name      String
   category  String
   level     Int     // 0-100
+  profileId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("skills")
 }
@@ -70,10 +102,12 @@ model Project {
   liveLink    String
   githubLink  String
   featured    Boolean @default(false)
+  profileId   Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   technologies ProjectTechnology[]
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("projects")
 }
@@ -97,8 +131,11 @@ model Experience {
   description String  @db.Text
   startDate   DateTime
   endDate     DateTime
+  profileId   Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("experience")
 }

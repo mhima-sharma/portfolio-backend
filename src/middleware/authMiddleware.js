@@ -4,7 +4,10 @@ import prisma from '../config/database.js';
 
 export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ')
+      ? authHeader.split(' ')[1]
+      : null;
 
     if (!token) {
       return errorResponse(res, 'No token provided', [], 401);
@@ -16,18 +19,31 @@ export const authMiddleware = async (req, res, next) => {
       return errorResponse(res, 'Invalid or expired token', [], 401);
     }
 
+    const adminId = Number(decoded.id ?? decoded.adminId ?? decoded.sub);
+
+    if (!Number.isInteger(adminId) || adminId <= 0) {
+      return errorResponse(res, 'Invalid token payload', [], 401);
+    }
+
     // Verify admin exists in database
     const admin = await prisma.admin.findUnique({
-      where: { id: decoded.id },
+      where: { id: adminId },
+      include: { profile: true },
     });
 
     if (!admin) {
       return errorResponse(res, 'Admin not found', [], 401);
     }
 
-    req.admin = admin;
+    req.admin = {
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+      profileId: admin.profileId,
+      profile: admin.profile,
+    };
     next();
   } catch (error) {
-    return errorResponse(res, 'Authentication error', [], 500);
+    next(error);
   }
 };

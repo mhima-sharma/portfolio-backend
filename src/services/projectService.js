@@ -1,10 +1,13 @@
 import prisma from '../config/database.js';
 
-export const createProject = async (data) => {
+export const createProject = async (profileId, data) => {
   const { technologies, ...projectData } = data;
 
   const project = await prisma.project.create({
-    data: projectData,
+    data: {
+      ...projectData,
+      profileId,
+    },
   });
 
   if (technologies && technologies.length > 0) {
@@ -19,8 +22,9 @@ export const createProject = async (data) => {
   return getProjectById(project.id);
 };
 
-export const getAllProjects = async () => {
+export const getAllProjects = async (profileId) => {
   const projects = await prisma.project.findMany({
+    where: { profileId },
     include: {
       technologies: true,
     },
@@ -32,9 +36,9 @@ export const getAllProjects = async () => {
   }));
 };
 
-export const getProjectById = async (id) => {
-  const project = await prisma.project.findUnique({
-    where: { id },
+export const getProjectById = async (id, profileId) => {
+  const project = await prisma.project.findFirst({
+    where: { id, profileId },
     include: {
       technologies: true,
     },
@@ -48,14 +52,18 @@ export const getProjectById = async (id) => {
   };
 };
 
-export const updateProject = async (id, data) => {
+export const updateProject = async (id, profileId, data) => {
   const { technologies, ...projectData } = data;
 
   // Update project
-  const project = await prisma.project.update({
-    where: { id },
+  const project = await prisma.project.updateMany({
+    where: { id, profileId },
     data: projectData,
   });
+
+  if (project.count === 0) {
+    throw new Error('Project not found');
+  }
 
   // Update technologies if provided
   if (technologies !== undefined) {
@@ -73,11 +81,11 @@ export const updateProject = async (id, data) => {
     }
   }
 
-  return getProjectById(id);
+  return getProjectById(id, profileId);
 };
 
-export const deleteProject = async (id) => {
-  return prisma.project.delete({
-    where: { id },
+export const deleteProject = async (id, profileId) => {
+  return prisma.project.deleteMany({
+    where: { id, profileId },
   });
 };
