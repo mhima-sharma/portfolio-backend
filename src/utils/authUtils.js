@@ -1,18 +1,27 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { getRequiredEnv } from '../config/env.js';
 
 export const generateToken = (adminId, profileId) => {
+  const jwtSecret = getRequiredEnv('JWT_SECRET');
+
   return jwt.sign(
     { id: adminId, profileId },
-    process.env.JWT_SECRET,
+    jwtSecret,
     { expiresIn: '7d' }
   );
 };
 
 export const verifyToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = getRequiredEnv('JWT_SECRET');
+
+    return jwt.verify(token, jwtSecret);
   } catch (error) {
+    if (error.code === 'CONFIG_ERROR') {
+      throw error;
+    }
+
     return null;
   }
 };

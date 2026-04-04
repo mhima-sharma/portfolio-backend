@@ -43,6 +43,10 @@ export const loginAdmin = async (email, password) => {
     throw new Error('Invalid credentials');
   }
 
+  if (!admin.passwordHash) {
+    throw new Error('Admin account is misconfigured');
+  }
+
   const isPasswordValid = await comparePassword(password, admin.passwordHash);
   if (!isPasswordValid) {
     throw new Error('Invalid credentials');

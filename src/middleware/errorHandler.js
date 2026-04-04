@@ -3,6 +3,15 @@ import { errorResponse } from '../utils/response.js';
 export const errorHandler = (err, req, res, next) => {
   console.error('Error:', err);
 
+  if (err.code === 'CONFIG_ERROR') {
+    return errorResponse(
+      res,
+      'Server configuration error. Please verify required environment variables.',
+      [],
+      500
+    );
+  }
+
   // Prisma database connection error
   if (err.code === 'P1001') {
     return errorResponse(
@@ -31,6 +40,15 @@ export const errorHandler = (err, req, res, next) => {
   // Validation errors
   if (err.status === 400 && err.array) {
     return errorResponse(res, 'Validation failed', err.array(), 400);
+  }
+
+  if (err.message === 'Admin account is misconfigured') {
+    return errorResponse(
+      res,
+      'Admin account configuration is incomplete. Please verify the stored password hash.',
+      [],
+      500
+    );
   }
 
   return errorResponse(res, 'Internal server error', [], 500);

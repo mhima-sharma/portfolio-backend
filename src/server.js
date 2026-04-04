@@ -3,9 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import portfolioRoutes from './routes/portfolioRoutes.js';
+import { assertRequiredEnv } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
+assertRequiredEnv(['DATABASE_URL', 'JWT_SECRET']);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
