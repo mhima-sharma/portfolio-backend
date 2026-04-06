@@ -4,7 +4,7 @@
 
 - [ ] Update JWT_SECRET to a strong random value
 - [ ] Set NODE_ENV=production
-- [ ] Use strong PostgreSQL password
+- [ ] Use strong MySQL password
 - [ ] Enable HTTPS
 - [ ] Configure correct FRONTEND_URL
 - [ ] Enable database backups
@@ -31,23 +31,27 @@ git push -u origin main
 
 ### 3. Configure Build & Start
 
-- **Build Command:** `npm install && npm run db:migrate && npm run db:seed`
+- **Build Command:** `npm install && npm run db:migrate:deploy`
 - **Start Command:** `npm start`
+
+Do not run `npm run db:migrate` in production. That script uses `prisma migrate dev`, which is only for local development.
+
+Do not run `npm run db:seed` on every deploy unless you explicitly want to wipe and recreate your portfolio data.
 
 ### 4. Add Environment Variables
 
 ```
-DATABASE_URL=postgresql://user:pass@host:5432/db
+DATABASE_URL=mysql://user:pass@host:3306/db
 JWT_SECRET=your-production-secret-key-here
 FRONTEND_URL=https://your-portfolio.com
 NODE_ENV=production
 PORT=10000
 ```
 
-### 5. Add PostgreSQL Plugin
+### 5. Add Database
 
-- Database → PostgreSQL
-- Copy connection string to DATABASE_URL
+- Use a MySQL-compatible database
+- Copy the connection string to `DATABASE_URL`
 
 ### 6. Deploy
 
@@ -69,10 +73,10 @@ Same as Render
 2. Sign up with GitHub
 3. New Project → Deploy from GitHub repo
 
-### 3. Add PostgreSQL
+### 3. Add Database
 
-- Plugins → PostgreSQL
-- Auto-configured DATABASE_URL
+- Add a MySQL-compatible database service
+- Set `DATABASE_URL` to the MySQL connection string
 
 ### 4. Add Environment Variables
 
@@ -107,9 +111,9 @@ apt update && apt upgrade -y
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - 
 sudo apt-get install -y nodejs
 
-# Install PostgreSQL
+# Install MySQL
 sudo apt update
-sudo apt install -y postgresql postgresql-contrib
+sudo apt install -y mysql-server
 
 # Install PM2 (process manager)
 sudo npm install -g pm2
@@ -118,18 +122,15 @@ sudo npm install -g pm2
 ### 2. Setup Database
 
 ```bash
-# Switch to postgres user
-sudo -u postgres psql
+# Open MySQL shell
+sudo mysql
 
 # Create database and user
 CREATE DATABASE portfolio_db;
-CREATE USER portfolio_user WITH PASSWORD 'strong_password';
-ALTER ROLE portfolio_user SET client_encoding TO 'utf8';
-ALTER ROLE portfolio_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE portfolio_user SET default_transaction_deferrable TO on;
-ALTER ROLE portfolio_user SET default_transaction_read_only TO off;
-GRANT ALL PRIVILEGES ON DATABASE portfolio_db TO portfolio_user;
-\q
+CREATE USER 'portfolio_user'@'localhost' IDENTIFIED BY 'strong_password';
+GRANT ALL PRIVILEGES ON portfolio_db.* TO 'portfolio_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
 ```
 
 ### 3. Clone & Setup Application
@@ -152,7 +153,7 @@ nano .env
 **Production .env:**
 ```
 PORT=3000
-DATABASE_URL="postgresql://portfolio_user:strong_password@localhost:5432/portfolio_db"
+DATABASE_URL="mysql://portfolio_user:strong_password@localhost:3306/portfolio_db"
 JWT_SECRET="generate-strong-random-key-here"
 FRONTEND_URL=https://your-portfolio.com
 NODE_ENV=production
@@ -161,7 +162,7 @@ NODE_ENV=production
 ### 4. Run Database Migrations
 
 ```bash
-npm run db:migrate
+npm run db:migrate:deploy
 npm run db:seed
 ```
 
@@ -310,7 +311,7 @@ pm2 flush  # Clear logs
 tail -f /var/log/nginx/error.log
 
 # Postgres
-sudo tail -f /var/log/postgresql/postgresql.log
+sudo tail -f /var/log/mysql/error.log
 ```
 
 ---
@@ -324,7 +325,7 @@ pm2 logs portfolio-api
 
 **Database connection error:**
 - Verify DATABASE_URL
-- Check PostgreSQL is running: `sudo systemctl status postgresql`
+- Check MySQL is running: `sudo systemctl status mysql`
 - Verify user permissions
 
 **CORS errors:**

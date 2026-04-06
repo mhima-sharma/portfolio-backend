@@ -30,7 +30,7 @@ CREATE TABLE `profiles` (
 
 -- CreateTable
 CREATE TABLE `about` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `id` INTEGER NOT NULL AUTO_INCREMENT, 
     `bio` TEXT NOT NULL,
     `description` TEXT NOT NULL,
     `yearsExperience` INTEGER NOT NULL,
