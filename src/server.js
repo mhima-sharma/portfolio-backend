@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import portfolioRoutes from './routes/portfolioRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import { assertRequiredEnv } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
@@ -54,6 +55,8 @@ app.get('/', (req, res) => {
     data: {
       health: '/health',
       auth: '/api/auth/login',
+      userTheme: '/api/user/theme',
+      userProfile: '/api/user/:id',
       portfolio: '/api/portfolio',
       about: '/api/about',
       contact: '/api/contact',
@@ -68,6 +71,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', portfolioRoutes);
+app.use('/api', userRoutes);
 
 // 404 Handler
 app.use(notFoundHandler);

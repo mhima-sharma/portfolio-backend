@@ -1,4 +1,5 @@
 import prisma from '../config/database.js';
+import { query } from '../config/mysql.js';
 import { hashPassword, comparePassword, generateToken } from '../utils/authUtils.js';
 import { sanitizeSlug, generateUniqueSlugCandidate } from '../utils/slugUtils.js';
 
@@ -33,6 +34,20 @@ const buildUniqueProfileSlug = async (requestedSlug, name) => {
   throw new Error('Unable to generate unique slug');
 };
 
+const getSelectedThemeByProfileId = async (profileId) => {
+  const rows = await query(
+    `
+      SELECT selected_theme
+      FROM profiles
+      WHERE id = ?
+      LIMIT 1
+    `,
+    [profileId]
+  );
+
+  return rows[0]?.selected_theme ?? null;
+};
+
 export const loginAdmin = async (email, password) => {
   const admin = await prisma.admin.findUnique({
     where: { email },
@@ -53,6 +68,9 @@ export const loginAdmin = async (email, password) => {
   }
 
   const token = generateToken(admin.id, admin.profileId);
+  const selectedTheme = admin.profile
+    ? await getSelectedThemeByProfileId(admin.profile.id)
+    : null;
 
   return {
     token,
@@ -68,6 +86,7 @@ export const loginAdmin = async (email, password) => {
           name: admin.profile.name,
           slug: admin.profile.slug,
           title: admin.profile.title,
+          selected_theme: selectedTheme,
         }
       : null,
   };
@@ -116,6 +135,7 @@ export const createUserWithProfile = async (name, email, password, slug, title) 
       });
 
       const token = generateToken(admin.id, profile.id);
+      const selectedTheme = await getSelectedThemeByProfileId(profile.id);
 
       return {
         token,
@@ -130,6 +150,7 @@ export const createUserWithProfile = async (name, email, password, slug, title) 
           name: profile.name,
           slug: profile.slug,
           title: profile.title,
+          selected_theme: selectedTheme,
         },
       };
     } catch (error) {
@@ -168,5 +189,21 @@ export const getAdminById = async (id) => {
     },
   });
 
-  return admin;
+  if (!admin) {
+    return null;
+  }
+
+  const selectedTheme = admin.profile
+    ? await getSelectedThemeByProfileId(admin.profile.id)
+    : null;
+
+  return {
+    ...admin,
+    profile: admin.profile
+      ? {
+          ...admin.profile,
+          selected_theme: selectedTheme,
+        }
+      : null,
+  };
 };

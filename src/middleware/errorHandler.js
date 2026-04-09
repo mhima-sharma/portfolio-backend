@@ -12,6 +12,10 @@ export const errorHandler = (err, req, res, next) => {
     );
   }
 
+  if (err.statusCode) {
+    return errorResponse(res, err.message, err.errors || [], err.statusCode);
+  }
+
   // Prisma database connection error
   if (err.code === 'P1001') {
     return errorResponse(
@@ -48,6 +52,15 @@ export const errorHandler = (err, req, res, next) => {
       'Admin account configuration is incomplete. Please verify the stored password hash.',
       [],
       500
+    );
+  }
+
+  if (['ECONNREFUSED', 'ENOTFOUND', 'ER_ACCESS_DENIED_ERROR', 'ER_BAD_DB_ERROR'].includes(err.code)) {
+    return errorResponse(
+      res,
+      'Database connection failed. Please verify your MySQL configuration.',
+      [],
+      503
     );
   }
 

@@ -6,6 +6,7 @@ import {
   getContact,
   updateContact,
 } from '../services/portfolioService.js';
+import { query } from '../config/mysql.js';
 
 // import { successResponse, errorResponse } from '../utils/response.js';
 // import {
@@ -16,6 +17,20 @@ import {
 //   updateContact,
 // } from '../services/portfolioService.js';
 import prisma from '../config/database.js';
+
+const getSelectedThemeByProfileId = async (profileId) => {
+  const rows = await query(
+    `
+      SELECT selected_theme
+      FROM profiles
+      WHERE id = ?
+      LIMIT 1
+    `,
+    [profileId]
+  );
+
+  return rows[0]?.selected_theme ?? null;
+};
 
 export const getPortfolio = async (req, res, next) => {
   try {
@@ -55,8 +70,15 @@ export const getPortfolio = async (req, res, next) => {
         select: { id: true, name: true, slug: true, title: true },
       });
 
+      const selectedTheme = await getSelectedThemeByProfileId(profileId);
+
       return successResponse(res, 'Portfolio data retrieved successfully', {
-        profile,
+        profile: profile
+          ? {
+              ...profile,
+              selected_theme: selectedTheme,
+            }
+          : null,
         ...data,
       });
     } else {
